@@ -22,7 +22,9 @@ configure_file(__init__.py.template ${NAMESPACE_INIT})
 set(EXT_FILES
     freecad_doc.py
     module_io.py
-    part.py
+    app/__init__.pyi
+    part/__init__.py
+    part/__init__.pyi
     partdesign.py
     project_utility.py
     sketcher.py
@@ -33,6 +35,30 @@ set(EXT_FILES
 
 foreach (it ${EXT_FILES})
     configure_file(${it} ${NAMESPACE_DIR}/${it})
+endforeach()
+
+file(GLOB PART_PYI_FILES "${CMAKE_SOURCE_DIR}/src/Mod/Part/App/*.pyi")
+
+file(MAKE_DIRECTORY "${NAMESPACE_DIR}/part/internal")
+
+foreach(pyifile ${PART_PYI_FILES})
+    get_filename_component(basename ${pyifile} NAME)
+    configure_file(${pyifile} "${NAMESPACE_DIR}/part/internal/${basename}")
+endforeach()
+
+file(GLOB BASE_PYI_FILES "${CMAKE_SOURCE_DIR}/src/Base/*.pyi")
+file(GLOB APP_PYI_FILES "${CMAKE_SOURCE_DIR}/src/App/*.pyi")
+
+file(MAKE_DIRECTORY "${NAMESPACE_DIR}/app/internal/Base")
+foreach(pyifile ${BASE_PYI_FILES})
+    get_filename_component(basename ${pyifile} NAME)
+    configure_file(${pyifile} "${NAMESPACE_DIR}/app/internal/Base/${basename}")
+endforeach()
+
+file(MAKE_DIRECTORY "${NAMESPACE_DIR}/app/internal/App")
+foreach(pyifile ${APP_PYI_FILES})
+    get_filename_component(basename ${pyifile} NAME)
+    configure_file(${pyifile} "${NAMESPACE_DIR}/app/internal/App/${basename}")
 endforeach()
 
 if (INSTALL_TO_SITEPACKAGES)
@@ -47,4 +73,19 @@ INSTALL(
         ${EXT_FILES}
     DESTINATION
         ${SITE_PACKAGE_DIR}
+)
+
+INSTALL(
+    FILES ${PYI_FILES}
+    DESTINATION ${SITE_PACKAGE_DIR}/part/internal
+)
+
+INSTALL(
+    FILES ${BASE_PYI_FILES}
+    DESTINATION ${SITE_PACKAGE_DIR}/app/internal/Base
+)
+
+INSTALL(
+    FILES ${APP_PYI_FILES}
+    DESTINATION ${SITE_PACKAGE_DIR}/app/internal/App
 )
