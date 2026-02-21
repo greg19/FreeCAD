@@ -144,40 +144,35 @@ QStringList TextDocumentEditorView::redoActions() const
     return redo;
 }
 
-bool TextDocumentEditorView::onHasMsg(const char* msg) const
+bool TextDocumentEditorView::onHasMsg(Message msg) const
 {
     // don't allow any actions if the editor is being closed
     if (aboutToClose) {
         return false;
     }
 
-    if (strcmp(msg, "Save") == 0) {
-        return true;
-    }
-    if (strcmp(msg, "Cut") == 0) {
-        return (!getEditor()->isReadOnly() && getEditor()->textCursor().hasSelection());
-    }
-    if (strcmp(msg, "Copy") == 0) {
-        return (getEditor()->textCursor().hasSelection());
-    }
-    if (strcmp(msg, "Paste") == 0) {
-        if (getEditor()->isReadOnly()) {
+    switch (msg) {
+        case Message::Save:
+            return true;
+        case Message::Cut:
+            return !getEditor()->isReadOnly() && getEditor()->textCursor().hasSelection();
+        case Message::Copy:
+            return getEditor()->textCursor().hasSelection();
+        case Message::Paste:
+            if (getEditor()->isReadOnly()) {
+                return false;
+            }
+            return !QApplication::clipboard()->text().isEmpty();
+        case Message::Undo:
+            return getEditor()->document()->isUndoAvailable();
+        case Message::Redo:
+            return getEditor()->document()->isRedoAvailable();
+        default:
             return false;
-        }
-        QClipboard* cb = QApplication::clipboard();
-        QString text = cb->text();
-        return !text.isEmpty();
     }
-    if (strcmp(msg, "Undo") == 0) {
-        return (getEditor()->document()->isUndoAvailable());
-    }
-    if (strcmp(msg, "Redo") == 0) {
-        return (getEditor()->document()->isRedoAvailable());
-    }
-    return false;
 }
 
-bool TextDocumentEditorView::onMsg(const char* msg, const char** output)
+bool TextDocumentEditorView::onMsg(Message msg, const char** output)
 {
     Q_UNUSED(output)
 
@@ -186,32 +181,29 @@ bool TextDocumentEditorView::onMsg(const char* msg, const char** output)
         return false;
     }
 
-    if (strcmp(msg, "Save") == 0) {
-        saveToObject();
-        getGuiDocument()->save();
-        return true;
+    switch (msg) {
+        case Message::Save:
+            saveToObject();
+            getGuiDocument()->save();
+            return true;
+        case Message::Cut:
+            getEditor()->cut();
+            return true;
+        case Message::Copy:
+            getEditor()->copy();
+            return true;
+        case Message::Paste:
+            getEditor()->paste();
+            return true;
+        case Message::Undo:
+            getEditor()->undo();
+            return true;
+        case Message::Redo:
+            getEditor()->redo();
+            return true;
+        default:
+            return false;
     }
-    if (strcmp(msg, "Cut") == 0) {
-        getEditor()->cut();
-        return true;
-    }
-    if (strcmp(msg, "Copy") == 0) {
-        getEditor()->copy();
-        return true;
-    }
-    if (strcmp(msg, "Paste") == 0) {
-        getEditor()->paste();
-        return true;
-    }
-    if (strcmp(msg, "Undo") == 0) {
-        getEditor()->undo();
-        return true;
-    }
-    if (strcmp(msg, "Redo") == 0) {
-        getEditor()->redo();
-        return true;
-    }
-    return false;
 }
 
 #include "moc_TextDocumentEditorView.cpp"

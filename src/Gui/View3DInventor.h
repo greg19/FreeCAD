@@ -97,8 +97,8 @@ public:
     View3DInventor* clone() override;
 
     /// Message handler
-    bool onMsg(const char* pMsg, const char** ppReturn) override;
-    bool onHasMsg(const char* pMsg) const override;
+    bool onMsg(Message msg, const char** ppReturn) override;
+    bool onHasMsg(Message msg) const override;
     void deleteSelf() override;
     /// get called when the document is updated
     void onRename(Gui::Document* pDoc) override;

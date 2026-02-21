@@ -202,16 +202,16 @@ void MDIView::viewAll()
 {}
 
 /// receive a message
-bool MDIView::onMsg(const char* pMsg, const char** ppReturn)
+bool MDIView::onMsg(Message msg, const char** ppReturn)
 {
-    Q_UNUSED(pMsg);
+    Q_UNUSED(msg);
     Q_UNUSED(ppReturn);
     return false;
 }
 
-bool MDIView::onHasMsg(const char* pMsg) const
+bool MDIView::onHasMsg(Message msg) const
 {
-    Q_UNUSED(pMsg);
+    Q_UNUSED(msg);
     return false;
 }
 

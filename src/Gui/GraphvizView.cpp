@@ -279,6 +279,58 @@ GraphvizView::~GraphvizView()
     delete view;
 }
 
+void GraphvizView::save()
+{
+    QList<QPair<QString, QString>> formatMap;
+    formatMap << qMakePair(QStringLiteral("%1 (*.gv)").arg(tr("Graphviz format")), QStringLiteral("gv"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.png)").arg(tr("PNG format")), QStringLiteral("png"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.bmp)").arg(tr("Bitmap format")), QStringLiteral("bmp"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.gif)").arg(tr("GIF format")), QStringLiteral("gif"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.jpg)").arg(tr("JPG format")), QStringLiteral("jpg"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.svg)").arg(tr("SVG format")), QStringLiteral("svg"));
+    formatMap << qMakePair(QStringLiteral("%1 (*.pdf)").arg(tr("PDF format")), QStringLiteral("pdf"));
+
+    QStringList filter;
+    for (const auto& it : std::as_const(formatMap)) {
+        filter << it.first;
+    }
+
+    QString selectedFilter;
+    QString fn = Gui::FileDialog::getSaveFileName(
+        this,
+        tr("Export Graph"),
+        QString(),
+        filter.join(QLatin1String(";;")),
+        &selectedFilter
+    );
+    if (!fn.isEmpty()) {
+        QString format;
+        for (const auto& it : std::as_const(formatMap)) {
+            if (selectedFilter == it.first) {
+                format = it.second;
+                break;
+            }
+        }
+        QByteArray buffer;
+        if (format == QLatin1String("gv")) {
+            std::stringstream str;
+            doc.exportGraphviz(str);
+            buffer = QByteArray::fromStdString(str.str());
+        }
+        else {
+            buffer = exportGraph(format);
+        }
+        if (buffer.isEmpty()) {
+            return;
+        }
+        QFile file(fn);
+        if (file.open(QFile::WriteOnly)) {
+            file.write(buffer);
+            file.close();
+        }
+    }
+}
+
 void GraphvizView::updateSvgItem(const App::Document& doc)
 {
     nPending++;
@@ -471,107 +523,41 @@ QByteArray GraphvizView::exportGraph(const QString& format)
     return dotProc.readAll();
 }
 
-bool GraphvizView::onMsg(const char* pMsg, const char**)
+bool GraphvizView::onMsg(Message msg, const char**)
 {
-    if (strcmp("Save", pMsg) == 0 || strcmp("SaveAs", pMsg) == 0) {
-        QList<QPair<QString, QString>> formatMap;
-        formatMap << qMakePair(
-            QStringLiteral("%1 (*.gv)").arg(tr("Graphviz format")),
-            QStringLiteral("gv")
-        );
-        formatMap
-            << qMakePair(QStringLiteral("%1 (*.png)").arg(tr("PNG format")), QStringLiteral("png"));
-        formatMap << qMakePair(
-            QStringLiteral("%1 (*.bmp)").arg(tr("Bitmap format")),
-            QStringLiteral("bmp")
-        );
-        formatMap
-            << qMakePair(QStringLiteral("%1 (*.gif)").arg(tr("GIF format")), QStringLiteral("gif"));
-        formatMap
-            << qMakePair(QStringLiteral("%1 (*.jpg)").arg(tr("JPG format")), QStringLiteral("jpg"));
-        formatMap
-            << qMakePair(QStringLiteral("%1 (*.svg)").arg(tr("SVG format")), QStringLiteral("svg"));
-        formatMap
-            << qMakePair(QStringLiteral("%1 (*.pdf)").arg(tr("PDF format")), QStringLiteral("pdf"));
-
-        QStringList filter;
-        for (const auto& it : std::as_const(formatMap)) {
-            filter << it.first;
-        }
-
-        QString selectedFilter;
-        QString fn = Gui::FileDialog::getSaveFileName(
-            this,
-            tr("Export Graph"),
-            QString(),
-            filter.join(QLatin1String(";;")),
-            &selectedFilter
-        );
-        if (!fn.isEmpty()) {
-            QString format;
-            for (const auto& it : std::as_const(formatMap)) {
-                if (selectedFilter == it.first) {
-                    format = it.second;
-                    break;
-                }
-            }
-            QByteArray buffer;
-            if (format == QLatin1String("gv")) {
-                std::stringstream str;
-                doc.exportGraphviz(str);
-                buffer = QByteArray::fromStdString(str.str());
-            }
-            else {
-                buffer = exportGraph(format);
-            }
-            if (buffer.isEmpty()) {
-                return true;
-            }
-            QFile file(fn);
-            if (file.open(QFile::WriteOnly)) {
-                file.write(buffer);
-                file.close();
-            }
-        }
-        return true;
+    switch (msg) {
+        case Message::Save:
+        case Message::SaveAs:
+            save();
+            return true;
+        case Message::Print:
+            print();
+            return true;
+        case Message::PrintPreview:
+            printPreview();
+            return true;
+        case Message::PrintPdf:
+            printPdf();
+            return true;
+        case Message::AllowsOverlayOnHover:
+        default:
+            return false;
     }
-    else if (strcmp("Print", pMsg) == 0) {
-        print();
-        return true;
-    }
-    else if (strcmp("PrintPreview", pMsg) == 0) {
-        printPreview();
-        return true;
-    }
-    else if (strcmp("PrintPdf", pMsg) == 0) {
-        printPdf();
-        return true;
-    }
-
-    return false;
 }
 
-bool GraphvizView::onHasMsg(const char* pMsg) const
+bool GraphvizView::onHasMsg(Message msg) const
 {
-    if (strcmp("Save", pMsg) == 0) {
-        return true;
+    switch (msg) {
+        case Message::Save:
+        case Message::SaveAs:
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::AllowsOverlayOnHover:
+            return true;
+        default:
+            return false;
     }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("Print", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPreview", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPdf", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-    return false;
 }
 
 void GraphvizView::print(QPrinter* printer)

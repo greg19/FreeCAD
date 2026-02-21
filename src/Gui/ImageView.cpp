@@ -311,69 +311,55 @@ void ImageView::print(QPrinter* printer)
     painter.drawPixmap(0, 0, pixmap);
 }
 
-bool ImageView::onMsg(const char* pMsg, const char** ppReturn)
+bool ImageView::onMsg(Message msg, const char** ppReturn)
 {
     Q_UNUSED(ppReturn)
-    if (strcmp("ViewFit", pMsg) == 0) {
-        fitToWindow(true);
-        return true;
+    switch (msg) {
+        case Message::ViewFit:
+            fitToWindow(true);
+            return true;
+        case Message::Print:
+            print();
+            return true;
+        case Message::PrintPreview:
+            printPreview();
+            return true;
+        case Message::PrintPdf:
+            printPdf();
+            return true;
+        case Message::ZoomIn:
+            zoomIn();
+            return true;
+        case Message::ZoomOut:
+            zoomOut();
+            return true;
+        case Message::Paste:
+            pasteImage();
+            return true;
+        case Message::AllowsOverlayOnHover:
+        default:
+            return false;
     }
-    if (strcmp("ZoomIn", pMsg) == 0) {
-        zoomIn();
-        return true;
-    }
-    if (strcmp("ZoomOut", pMsg) == 0) {
-        zoomOut();
-        return true;
-    }
-    if (strcmp("Paste", pMsg) == 0) {
-        pasteImage();
-        return true;
-    }
-    if (strcmp("Print", pMsg) == 0) {
-        print();
-        return true;
-    }
-    if (strcmp("PrintPreview", pMsg) == 0) {
-        printPreview();
-        return true;
-    }
-    if (strcmp("PrintPdf", pMsg) == 0) {
-        printPdf();
-        return true;
-    }
-
-    return false;
 }
 
-bool ImageView::onHasMsg(const char* pMsg) const
+bool ImageView::onHasMsg(Message msg) const
 {
-    if (strcmp("ViewFit", pMsg) == 0) {
-        return true;
+    switch (msg) {
+        case Message::ViewFit:
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::AllowsOverlayOnHover:
+            return true;
+        case Message::ZoomIn:
+            return canZoomIn();
+        case Message::ZoomOut:
+            return canZoomOut();
+        case Message::Paste:
+            return canPasteImage();
+        default:
+            return false;
     }
-    if (strcmp("ZoomIn", pMsg) == 0) {
-        return canZoomIn();
-    }
-    if (strcmp("ZoomOut", pMsg) == 0) {
-        return canZoomOut();
-    }
-    if (strcmp("Paste", pMsg) == 0) {
-        return canPasteImage();
-    }
-    if (strcmp("Print", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("PrintPreview", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("PrintPdf", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-
-    return false;
 }
 
 #include "moc_ImageView.cpp"

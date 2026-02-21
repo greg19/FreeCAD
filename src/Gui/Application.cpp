@@ -778,7 +778,7 @@ void Application::open(const char* FileName, const char* Module)
                 Gui::Command::runCommand(Gui::Command::App, code.c_str());
 
                 // ViewFit
-                if (sendHasMsgToActiveView("ViewFit")) {
+                if (sendHasMsgToActiveView(Message::ViewFit)) {
                     ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath(
                         "User parameter:BaseApp/Preferences/View"
                     );
@@ -878,8 +878,7 @@ void Application::importFrom(const char* FileName, const char* DocName, const ch
                     if (hGrp->GetBool("AutoFitToView", true)) {
                         MDIView* view = doc->getActiveView();
                         if (view) {
-                            const char* ret = nullptr;
-                            if (view->onMsg("ViewFit", &ret)) {
+                            if (view->onMsg(Message::ViewFit, nullptr)) {
                                 updateActions(true);
                             }
                         }
@@ -1404,22 +1403,22 @@ void Application::onLastWindowClosed(Gui::Document* pcDoc)
 }
 
 /// send Messages to the active view
-bool Application::sendMsgToActiveView(const char* pMsg, const char** ppReturn)
+bool Application::sendMsgToActiveView(Message msg, const char** ppReturn)
 {
     MDIView* pView = getMainWindow()->activeWindow();
-    bool res = pView ? pView->onMsg(pMsg, ppReturn) : false;
+    bool res = pView ? pView->onMsg(msg, ppReturn) : false;
     updateActions(true);
     return res;
 }
 
-bool Application::sendHasMsgToActiveView(const char* pMsg)
+bool Application::sendHasMsgToActiveView(Message msg)
 {
     MDIView* pView = getMainWindow()->activeWindow();
-    return pView ? pView->onHasMsg(pMsg) : false;
+    return pView ? pView->onHasMsg(msg) : false;
 }
 
 /// send Messages to the active view
-bool Application::sendMsgToFocusView(const char* pMsg, const char** ppReturn)
+bool Application::sendMsgToFocusView(Message msg, const char** ppReturn)
 {
     MDIView* pView = getMainWindow()->activeWindow();
     if (!pView) {
@@ -1427,7 +1426,7 @@ bool Application::sendMsgToFocusView(const char* pMsg, const char** ppReturn)
     }
     for (auto focus = qApp->focusWidget(); focus; focus = focus->parentWidget()) {
         if (focus == pView) {
-            bool res = pView->onMsg(pMsg, ppReturn);
+            bool res = pView->onMsg(msg, ppReturn);
             updateActions(true);
             return res;
         }
@@ -1435,7 +1434,7 @@ bool Application::sendMsgToFocusView(const char* pMsg, const char** ppReturn)
     return false;
 }
 
-bool Application::sendHasMsgToFocusView(const char* pMsg)
+bool Application::sendHasMsgToFocusView(Message msg)
 {
     MDIView* pView = getMainWindow()->activeWindow();
     if (!pView) {
@@ -1443,7 +1442,7 @@ bool Application::sendHasMsgToFocusView(const char* pMsg)
     }
     for (auto focus = qApp->focusWidget(); focus; focus = focus->parentWidget()) {
         if (focus == pView) {
-            return pView->onHasMsg(pMsg);
+            return pView->onHasMsg(msg);
         }
     }
     return false;

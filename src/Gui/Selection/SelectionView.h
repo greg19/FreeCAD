@@ -76,7 +76,7 @@ public:
 
     void leaveEvent(QEvent*) override;
 
-    bool onMsg(const char* pMsg, const char** ppReturn) override;
+    bool onMsg(Message msg, const char** ppReturn) override;
 
     const char* getName() const override
     {

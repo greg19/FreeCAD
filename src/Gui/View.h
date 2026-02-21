@@ -37,6 +37,53 @@ namespace Gui
 class Document;
 class ViewProvider;
 
+enum class Message
+{
+    Save,
+    SaveAs,
+    SaveCopy,
+    Cut,
+    Copy,
+    Paste,
+    Undo,
+    Redo,
+    Print,
+    PrintPreview,
+    PrintPdf,
+    PrintAll,
+    Dump,
+    ZoomIn,
+    ZoomOut,
+    ViewFit,
+    ViewSelection,
+    ViewFront,
+    ViewRear,
+    ViewLeft,
+    ViewRight,
+    ViewTop,
+    ViewBottom,
+    ViewAxo,
+    ViewVR,
+    OrtographicCamera,
+    PerspectiveCamera,
+    CanPan,
+    AllowsOverlayOnHover,
+    AlignToSelection,
+    GetCamera,
+    SetCamera,
+    SetStereoRedGreen,
+    SetStereoQuanBuff,
+    SetStereoInterleavedRows,
+    SetStereoInterleavedColumns,
+    SetStereoOff,
+    Run,
+    DebugStart,
+    DebugStop,
+    StartDebug,
+    ToggleBreakpoint,
+    Std_Delete,
+};
+
 /** Base class of all windows belonging to a document
  *  there are two ways of belonging to a document. The
  *  first way is to a fixed one. The second way is to always
@@ -105,9 +152,9 @@ public:
         return "Base view";
     }
     /// Message handler
-    virtual bool onMsg(const char* pMsg, const char** ppReturn) = 0;
+    virtual bool onMsg(Message msg, const char** ppReturn) = 0;
     /// Message handler test
-    virtual bool onHasMsg(const char* pMsg) const = 0;
+    virtual bool onHasMsg(Message msg) const = 0;
     /// overwrite when checking on close state
     virtual bool canClose()
     {

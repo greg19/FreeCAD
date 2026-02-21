@@ -179,97 +179,76 @@ void MDIViewPage::onDeleteObject(const App::DocumentObject& obj)
     blockSceneSelection(false);
 }
 
-bool MDIViewPage::onMsg(const char* pMsg, const char**)
+bool MDIViewPage::onMsg(Gui::Message msg, const char**)
 {
     Gui::Document* doc(getGuiDocument());
-
     if (!doc) {
         return false;
     }
-    else if (strcmp("ViewFit", pMsg) == 0) {
-        viewAll();
-        return true;
-    }
-    else if (strcmp("Save", pMsg) == 0) {
-        doc->save();
-        return true;
-    }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        doc->saveAs();
-        return true;
-    }
-    else if (strcmp("SaveCopy", pMsg) == 0) {
-        doc->saveCopy();
-        return true;
-    }
-    else if (strcmp("Undo", pMsg) == 0) {
-        doc->undo(1);
-        Gui::Command::updateActive();
-        fixSceneDependencies();    // check QGraphicsScene item parenting
-        return true;
-    }
-    else if (strcmp("Redo", pMsg) == 0) {
-        doc->redo(1);
-        Gui::Command::updateActive();
-        return true;
-    }
-    else if (strcmp("ZoomIn", pMsg) == 0) {
-        zoomIn();
-        return true;
-    }
-    else if (strcmp("ZoomOut", pMsg) == 0) {
-        zoomOut();
-        return true;
-    }
 
-    return false;
+    switch (msg) {
+        case Gui::Message::Save:
+            doc->save();
+            return true;
+        case Gui::Message::SaveAs:
+            doc->saveAs();
+            return true;
+        case Gui::Message::SaveCopy:
+            doc->saveCopy();
+            return true;
+        case Gui::Message::ZoomIn:
+            zoomIn();
+            return true;
+        case Gui::Message::ZoomOut:
+            zoomOut();
+            return true;
+        case Gui::Message::ViewFit:
+            viewAll();
+            return true;
+        case Gui::Message::AllowsOverlayOnHover:
+            return true;
+        case Gui::Message::Undo:
+            doc->undo(1);
+            Gui::Command::updateActive();
+            fixSceneDependencies();    // check QGraphicsScene item parenting
+            return true;
+        case Gui::Message::Redo:
+            doc->redo(1);
+            Gui::Command::updateActive();
+            return true;
+        case Gui::Message::CanPan:
+        case Gui::Message::Print:
+        case Gui::Message::PrintPreview:
+        case Gui::Message::PrintPdf:
+        case Gui::Message::PrintAll:
+        default:
+            return false;
+    }
 }
 
-bool MDIViewPage::onHasMsg(const char* pMsg) const
+bool MDIViewPage::onHasMsg(Gui::Message msg) const
 {
-    if (strcmp("ViewFit", pMsg) == 0) {
-        return true;
+    switch (msg) {
+        case Gui::Message::Save:
+        case Gui::Message::SaveAs:
+        case Gui::Message::SaveCopy:
+        case Gui::Message::Print:
+        case Gui::Message::PrintPreview:
+        case Gui::Message::PrintPdf:
+        case Gui::Message::PrintAll:
+        case Gui::Message::ZoomIn:
+        case Gui::Message::ZoomOut:
+        case Gui::Message::ViewFit:
+        case Gui::Message::CanPan:
+        case Gui::Message::AllowsOverlayOnHover:
+            return true;
+        case Gui::Message::Undo:
+            return getAppDocument()->getAvailableUndos() > 0;
+        case Gui::Message::Redo:
+            return getAppDocument()->getAvailableRedos() > 0;
+        default:
+            return false;
     }
-    else if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("CanPan",pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("Redo", pMsg) == 0 && getAppDocument()->getAvailableRedos() > 0) {
-        return true;
-    }
-    else if (strcmp("Undo", pMsg) == 0 && getAppDocument()->getAvailableUndos() > 0) {
-        return true;
-    }
-    else if (strcmp("Print", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("Save", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SaveCopy", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPreview", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPdf", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintAll", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ZoomIn", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ZoomOut", pMsg) == 0) {
-        return true;
-    }
-    return false;
 }
 
 // handle a zoomIn message from the menu

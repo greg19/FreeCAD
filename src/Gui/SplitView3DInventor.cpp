@@ -141,119 +141,93 @@ const char* AbstractSplitView::getName() const
     return "SplitView3DInventor";
 }
 
-bool AbstractSplitView::onMsg(const char* pMsg, const char**)
+bool AbstractSplitView::onMsg(Message msg, const char**)
 {
-    if (strcmp("ViewFit", pMsg) == 0) {
-        viewAll();
-        return true;
+    SbRotation rot;
+    switch (msg) {
+        case Message::ViewFit:
+            viewAll();
+            return true;
+        case Message::ViewFront:
+            rot = SbRotation(Camera::rotation(Camera::Front));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewBottom:
+            rot = SbRotation(Camera::rotation(Camera::Bottom));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewLeft:
+            rot = SbRotation(Camera::rotation(Camera::Left));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewRight:
+            rot = SbRotation(Camera::rotation(Camera::Right));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewTop:
+            rot = SbRotation(Camera::rotation(Camera::Top));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewRear:
+            rot = SbRotation(Camera::rotation(Camera::Rear));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::ViewAxo:
+            rot = SbRotation(Camera::rotation(Camera::Isometric));
+            for (auto& it : _viewer) {
+                SoCamera* cam = it->getSoRenderManager()->getCamera();
+                cam->orientation.setValue(rot);
+                it->viewAll();
+            }
+            return true;
+        case Message::CanPan:
+        case Message::AllowsOverlayOnHover:
+        default:
+            return false;
     }
-    else if (strcmp("ViewBottom", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Bottom));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewFront", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Front));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewLeft", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Left));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewRear", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Rear));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewRight", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Right));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewTop", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Top));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-    else if (strcmp("ViewAxo", pMsg) == 0) {
-        SbRotation rot(Camera::rotation(Camera::Isometric));
-        for (std::vector<View3DInventorViewer*>::iterator it = _viewer.begin(); it != _viewer.end();
-             ++it) {
-            SoCamera* cam = (*it)->getSoRenderManager()->getCamera();
-            cam->orientation.setValue(rot);
-            (*it)->viewAll();
-        }
-        return true;
-    }
-
-    return false;
 }
 
-bool AbstractSplitView::onHasMsg(const char* pMsg) const
+bool AbstractSplitView::onHasMsg(Message msg) const
 {
-    if (strcmp("CanPan", pMsg) == 0) {
-        return true;
+    switch (msg) {
+        case Message::ViewFit:
+        case Message::ViewFront:
+        case Message::ViewBottom:
+        case Message::ViewLeft:
+        case Message::ViewRight:
+        case Message::ViewTop:
+        case Message::ViewRear:
+        case Message::ViewAxo:
+        case Message::CanPan:
+        case Message::AllowsOverlayOnHover:
+            return true;
+        default:
+            return false;
     }
-    else if (strcmp("ViewFit", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewBottom", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewFront", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewLeft", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewRear", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewRight", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewTop", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewAxo", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-    return false;
 }
 
 void AbstractSplitView::setOverrideCursor(const QCursor& aCursor)
@@ -374,7 +348,7 @@ Py::Object AbstractSplitViewPy::fitAll(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewFit", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewFit, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -395,7 +369,7 @@ Py::Object AbstractSplitViewPy::viewBottom(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewBottom", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewBottom, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -417,7 +391,7 @@ Py::Object AbstractSplitViewPy::viewFront(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewFront", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewFront, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -439,7 +413,7 @@ Py::Object AbstractSplitViewPy::viewLeft(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewLeft", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewLeft, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -461,7 +435,7 @@ Py::Object AbstractSplitViewPy::viewRear(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewRear", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewRear, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -483,7 +457,7 @@ Py::Object AbstractSplitViewPy::viewRight(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewRight", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewRight, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -505,7 +479,7 @@ Py::Object AbstractSplitViewPy::viewTop(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewTop", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewTop, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());
@@ -527,7 +501,7 @@ Py::Object AbstractSplitViewPy::viewIsometric(const Py::Tuple& args)
     }
 
     try {
-        getSplitViewPtr()->onMsg("ViewAxo", nullptr);
+        getSplitViewPtr()->onMsg(Message::ViewAxo, nullptr);
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());

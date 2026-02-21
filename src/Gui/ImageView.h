@@ -49,9 +49,9 @@ public:
     }
 
     /// Message handler
-    bool onMsg(const char* pMsg, const char** ppReturn) override;
+    bool onMsg(Message msg, const char** ppReturn) override;
     /// Message handler test
-    bool onHasMsg(const char* pMsg) const override;
+    bool onHasMsg(Message msg) const override;
 
     /** @name Printing */
     //@{

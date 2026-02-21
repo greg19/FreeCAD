@@ -161,101 +161,84 @@ SheetView::~SheetView()
     delete delegate;
 }
 
-bool SheetView::onMsg(const char* pMsg, const char**)
+bool SheetView::onMsg(Gui::Message msg, const char**)
 {
-    if (strcmp("Undo", pMsg) == 0) {
-        getGuiDocument()->undo(1);
-        App::Document* doc = getAppDocument();
-        if (doc) {
-            doc->recompute();
-        }
-        return true;
-    }
-    else if (strcmp("Redo", pMsg) == 0) {
-        getGuiDocument()->redo(1);
-        App::Document* doc = getAppDocument();
-        if (doc) {
-            doc->recompute();
-        }
-        return true;
-    }
-    else if (strcmp("Save", pMsg) == 0) {
-        getGuiDocument()->save();
-        return true;
-    }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        getGuiDocument()->saveAs();
-        return true;
-    }
-    else if (strcmp("Std_Delete", pMsg) == 0) {
-        std::vector<Range> ranges = selectedRanges();
-        if (sheet->hasCell(ranges)) {
-            Gui::Command::openCommand(QT_TRANSLATE_NOOP("Command", "Clear Cells"));
-            std::vector<Range>::const_iterator i = ranges.begin();
-            for (; i != ranges.end(); ++i) {
-                FCMD_OBJ_CMD(sheet, "clear('" << i->rangeString() << "')");
+    App::Document* doc = nullptr;
+    std::vector<Range> ranges;
+
+    switch (msg) {
+        case Gui::Message::Save:
+            getGuiDocument()->save();
+            return true;
+        case Gui::Message::SaveAs:
+            getGuiDocument()->saveAs();
+            return true;
+        case Gui::Message::Cut:
+            ui->cells->cutSelection();
+            return true;
+        case Gui::Message::Copy:
+            ui->cells->copySelection();
+            return true;
+        case Gui::Message::Paste:
+            ui->cells->pasteClipboard();
+            return true;
+        case Gui::Message::Undo:
+            getGuiDocument()->undo(1);
+            doc = getAppDocument();
+            if (doc) {
+                doc->recompute();
             }
-            Gui::Command::commitCommand();
-            Gui::Command::doCommand(Gui::Command::Doc, "App.ActiveDocument.recompute()");
-        }
-        return true;
-    }
-    else if (strcmp("Cut", pMsg) == 0) {
-        ui->cells->cutSelection();
-        return true;
-    }
-    else if (strcmp("Copy", pMsg) == 0) {
-        ui->cells->copySelection();
-        return true;
-    }
-    else if (strcmp("Paste", pMsg) == 0) {
-        ui->cells->pasteClipboard();
-        return true;
-    }
-    else {
-        return false;
+            return true;
+        case Gui::Message::Redo:
+            getGuiDocument()->redo(1);
+            doc = getAppDocument();
+            if (doc) {
+                doc->recompute();
+            }
+            return true;
+        case Gui::Message::Std_Delete:
+            ranges = selectedRanges();
+            if (sheet->hasCell(ranges)) {
+                Gui::Command::openCommand(QT_TRANSLATE_NOOP("Command", "Clear Cells"));
+                for (App::Range& i : ranges) {
+                    FCMD_OBJ_CMD(sheet, "clear('" << i.rangeString() << "')");
+                }
+                Gui::Command::commitCommand();
+                Gui::Command::doCommand(Gui::Command::Doc, "App.ActiveDocument.recompute()");
+            }
+            return true;
+        case Gui::Message::Print:
+        case Gui::Message::PrintPreview:
+        case Gui::Message::PrintPdf:
+        case Gui::Message::AllowsOverlayOnHover:
+        default:
+            return false;
     }
 }
 
-bool SheetView::onHasMsg(const char* pMsg) const
+bool SheetView::onHasMsg(Gui::Message msg) const
 {
-    if (strcmp("Undo", pMsg) == 0) {
-        App::Document* doc = getAppDocument();
-        return doc && doc->getAvailableUndos() > 0;
+    App::Document* doc = nullptr;
+    switch (msg) {
+        case Gui::Message::Save:
+        case Gui::Message::SaveAs:
+        case Gui::Message::Cut:
+        case Gui::Message::Copy:
+        case Gui::Message::Paste:
+        case Gui::Message::Print:
+        case Gui::Message::PrintPreview:
+        case Gui::Message::PrintPdf:
+        case Gui::Message::AllowsOverlayOnHover:
+            return true;
+        case Gui::Message::Undo:
+            doc = getAppDocument();
+            return doc && doc->getAvailableUndos() > 0;
+        case Gui::Message::Redo:
+            doc = getAppDocument();
+            return doc && doc->getAvailableRedos() > 0;
+        default:
+            return false;
     }
-    if (strcmp("Redo", pMsg) == 0) {
-        App::Document* doc = getAppDocument();
-        return doc && doc->getAvailableRedos() > 0;
-    }
-    if (strcmp("Save", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("SaveAs", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("Cut", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("Copy", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("Paste", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "Print") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "PrintPreview") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "PrintPdf") == 0) {
-        return true;
-    }
-    else if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-
-    return false;
 }
 
 /**

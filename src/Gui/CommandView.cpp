@@ -394,7 +394,7 @@ void StdCmdFreezeViews::activated(int iMsg)
     else if (iMsg == 3) {
         // Create a new view
         const char* ppReturn = nullptr;
-        getGuiApplication()->sendMsgToActiveView("GetCamera", &ppReturn);
+        getGuiApplication()->sendMsgToActiveView(Message::GetCamera, &ppReturn);
 
         QList<QAction*> acts = pcAction->actions();
         int index = 1;
@@ -1666,7 +1666,7 @@ void StdCmdViewFitAll::activated(int iMsg)
 bool StdCmdViewFitAll::isActive()
 {
     // return isViewOfType(Gui::View3DInventor::getClassTypeId());
-    return getGuiApplication()->sendHasMsgToActiveView("ViewFit");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::ViewFit);
 }
 
 //===========================================================================
@@ -1695,7 +1695,7 @@ void StdCmdViewFitSelection::activated(int iMsg)
 
 bool StdCmdViewFitSelection::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("ViewSelection");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::ViewSelection);
 }
 
 //===========================================================================
@@ -2002,7 +2002,7 @@ void StdCmdViewVR::activated(int iMsg)
 
 bool StdCmdViewVR::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("ViewVR");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::ViewVR);
 }
 
 
@@ -2491,7 +2491,7 @@ void StdCmdViewIvStereoOff::activated(int iMsg)
 
 bool StdCmdViewIvStereoOff::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("SetStereoOff");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::SetStereoOff);
 }
 
 
@@ -2520,7 +2520,7 @@ void StdCmdViewIvStereoRedGreen::activated(int iMsg)
 
 bool StdCmdViewIvStereoRedGreen::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("SetStereoRedGreen");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::SetStereoRedGreen);
 }
 
 //===========================================================================
@@ -2548,7 +2548,7 @@ void StdCmdViewIvStereoQuadBuff::activated(int iMsg)
 
 bool StdCmdViewIvStereoQuadBuff::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("SetStereoQuadBuff");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::SetStereoQuadBuff);
 }
 
 //===========================================================================
@@ -2576,7 +2576,7 @@ void StdCmdViewIvStereoInterleavedRows::activated(int iMsg)
 
 bool StdCmdViewIvStereoInterleavedRows::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("SetStereoInterleavedRows");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::SetStereoInterleavedRows);
 }
 
 //===========================================================================
@@ -2604,7 +2604,7 @@ void StdCmdViewIvStereoInterleavedColumns::activated(int iMsg)
 
 bool StdCmdViewIvStereoInterleavedColumns::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("SetStereoInterleavedColumns");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::SetStereoInterleavedColumns);
 }
 
 
@@ -2634,7 +2634,7 @@ void StdCmdViewIvIssueCamPos::activated(int iMsg)
     std::string::size_type pos;
 
     const char* ppReturn = nullptr;
-    getGuiApplication()->sendMsgToActiveView("GetCamera", &ppReturn);
+    getGuiApplication()->sendMsgToActiveView(Message::GetCamera, &ppReturn);
 
     // remove the #inventor line...
     Temp2 = ppReturn;
@@ -2657,7 +2657,7 @@ void StdCmdViewIvIssueCamPos::activated(int iMsg)
 
 bool StdCmdViewIvIssueCamPos::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("GetCamera");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::GetCamera);
 }
 
 
@@ -2682,12 +2682,12 @@ StdViewZoomIn::StdViewZoomIn()
 void StdViewZoomIn::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
-    getGuiApplication()->sendMsgToFocusView("ZoomIn");
+    getGuiApplication()->sendMsgToFocusView(Message::ZoomIn);
 }
 
 bool StdViewZoomIn::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("ZoomIn");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::ZoomIn);
 }
 
 //===========================================================================
@@ -2711,12 +2711,12 @@ StdViewZoomOut::StdViewZoomOut()
 void StdViewZoomOut::activated(int iMsg)
 {
     Q_UNUSED(iMsg);
-    getGuiApplication()->sendMsgToFocusView("ZoomOut");
+    getGuiApplication()->sendMsgToFocusView(Message::ZoomOut);
 }
 
 bool StdViewZoomOut::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("ZoomOut");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::ZoomOut);
 }
 
 namespace
@@ -4214,7 +4214,7 @@ void StdCmdAlignToSelection::activated(int iMsg)
 
 bool StdCmdAlignToSelection::isActive()
 {
-    return getGuiApplication()->sendHasMsgToActiveView("AlignToSelection");
+    return getGuiApplication()->sendHasMsgToActiveView(Message::AlignToSelection);
 }
 
 //===========================================================================

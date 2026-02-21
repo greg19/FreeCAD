@@ -45,8 +45,8 @@ public:
     {
         return "TextDocumentEditorView";
     }
-    bool onMsg(const char* msg, const char** output) override;
-    bool onHasMsg(const char* msg) const override;
+    bool onMsg(Message msg, const char** output) override;
+    bool onHasMsg(Message msg) const override;
 
     QPlainTextEdit* getEditor() const
     {

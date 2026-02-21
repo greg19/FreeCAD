@@ -357,13 +357,13 @@ void StartView::newArchFile()
     postStart(PostStartBehavior::doNotSwitchWorkbench);
 }
 
-bool StartView::onHasMsg(const char* pMsg) const
+bool StartView::onHasMsg(Gui::Message msg) const
 {
-    if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
+    if (msg == Gui::Message::AllowsOverlayOnHover) {
         return false;
     }
 
-    return MDIView::onHasMsg(pMsg);
+    return MDIView::onHasMsg(msg);
 }
 
 void StartView::postStart(PostStartBehavior behavior)

@@ -181,7 +181,7 @@ OverlayProxyWidget::HitTest OverlayProxyWidget::hitTest(const QPoint& globalPt, 
         }
 
         auto view = getMainWindow()->activeWindow();
-        auto overlayOnHoverAllowed = view && view->onHasMsg("AllowsOverlayOnHover");
+        auto overlayOnHoverAllowed = view && view->onHasMsg(Message::AllowsOverlayOnHover);
 
         if (owner->getState() != OverlayTabWidget::State::Hidden && hit == HitTest::HitOuter
             && overlayOnHoverAllowed && OverlayParams::getDockOverlayActivateOnHover()) {
@@ -1235,11 +1235,12 @@ bool OverlayTabWidget::checkAutoHide() const
             return true;
         }
 
-        if (!view->onHasMsg("AllowsOverlayOnHover")) {
+        if (!view->onHasMsg(Message::AllowsOverlayOnHover)) {
             return true;
         }
 
-        if (!view->onHasMsg("CanPan") && view->parentWidget() && view->parentWidget()->isMaximized()) {
+        if (!view->onHasMsg(Message::CanPan) && view->parentWidget()
+            && view->parentWidget()->isMaximized()) {
             return true;
         }
     }
@@ -1415,7 +1416,8 @@ bool OverlayTabWidget::isTransparent() const
         if (!view) {
             return false;
         }
-        if (!view->onHasMsg("CanPan") && view->parentWidget() && view->parentWidget()->isMaximized()) {
+        if (!view->onHasMsg(Message::CanPan) && view->parentWidget()
+            && view->parentWidget()->isMaximized()) {
             return false;
         }
     }

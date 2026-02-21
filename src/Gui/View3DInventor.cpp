@@ -350,240 +350,164 @@ bool View3DInventor::containsViewProvider(const ViewProvider* vp) const
 
 // **********************************************************************************
 
-bool View3DInventor::onMsg(const char* pMsg, const char** ppReturn)
+bool View3DInventor::onMsg(Message msg, const char** ppReturn)
 {
-    if (strcmp("ViewFit", pMsg) == 0) {
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewVR", pMsg) == 0) {
-        // call the VR portion of the viewer
-        _viewer->viewVR();
-        return true;
-    }
-    else if (strcmp("ViewSelection", pMsg) == 0) {
-        _viewer->viewSelection();
-        return true;
-    }
-    else if (strcmp("SetStereoRedGreen", pMsg) == 0) {
-        _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::ANAGLYPH);
-        return true;
-    }
-    else if (strcmp("SetStereoQuadBuff", pMsg) == 0) {
-        _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::QUAD_BUFFER);
-        return true;
-    }
-    else if (strcmp("SetStereoInterleavedRows", pMsg) == 0) {
-        _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::INTERLEAVED_ROWS);
-        return true;
-    }
-    else if (strcmp("SetStereoInterleavedColumns", pMsg) == 0) {
-        _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::INTERLEAVED_COLUMNS);
-        return true;
-    }
-    else if (strcmp("SetStereoOff", pMsg) == 0) {
-        _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::MONO);
-        return true;
-    }
-    else if (strcmp("GetCamera", pMsg) == 0) {
-        SoCamera* Cam = _viewer->getSoRenderManager()->getCamera();
-        if (!Cam) {
-            return false;
-        }
-        *ppReturn = SoFCDB::writeNodesToString(Cam).c_str();
-        return true;
-    }
-    else if (strncmp("SetCamera", pMsg, 9) == 0) {
-        return setCamera(pMsg + 10);
-    }
-    else if (strncmp("Dump", pMsg, 4) == 0) {
-        dump(pMsg + 5);
-        return true;
-    }
-    else if (strcmp("ViewBottom", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Bottom));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewFront", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Front));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewLeft", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Left));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewRear", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Rear));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewRight", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Right));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewTop", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Top));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("ViewAxo", pMsg) == 0) {
-        _viewer->setCameraOrientation(Camera::rotation(Camera::Isometric));
-        _viewer->viewAll();
-        return true;
-    }
-    else if (strcmp("OrthographicCamera", pMsg) == 0) {
-        _viewer->setCameraType(SoOrthographicCamera::getClassTypeId());
-        return true;
-    }
-    else if (strcmp("PerspectiveCamera", pMsg) == 0) {
-        _viewer->setCameraType(SoPerspectiveCamera::getClassTypeId());
-        return true;
-    }
-    else if (strcmp("Undo", pMsg) == 0) {
-        getGuiDocument()->undo(1);
-        return true;
-    }
-    else if (strcmp("Redo", pMsg) == 0) {
-        getGuiDocument()->redo(1);
-        return true;
-    }
-    else if (strcmp("Save", pMsg) == 0) {
-        getGuiDocument()->save();
-        return true;
-    }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        getGuiDocument()->saveAs();
-        return true;
-    }
-    else if (strcmp("SaveCopy", pMsg) == 0) {
-        getGuiDocument()->saveCopy();
-        return true;
-    }
-    else if (strcmp("AlignToSelection", pMsg) == 0) {
-        _viewer->alignToSelection();
-        return true;
-    }
-    else if (strcmp("ZoomIn", pMsg) == 0) {
-        View3DInventorViewer* viewer = getViewer();
-        viewer->navigationStyle()->zoomIn();
-        return true;
-    }
-    else if (strcmp("ZoomOut", pMsg) == 0) {
-        View3DInventorViewer* viewer = getViewer();
-        viewer->navigationStyle()->zoomOut();
-        return true;
-    }
+    SoCamera* Cam = nullptr;
 
-    return false;
+    switch (msg) {
+        case Message::Save:
+            getGuiDocument()->save();
+            return true;
+        case Message::SaveAs:
+            getGuiDocument()->saveAs();
+            return true;
+        case Message::SaveCopy:
+            getGuiDocument()->saveCopy();
+            return true;
+        case Message::Undo:
+            getGuiDocument()->undo(1);
+            return true;
+        case Message::Redo:
+            getGuiDocument()->redo(1);
+            return true;
+        case Message::Dump:
+            dump(pMsg + 5);
+            return true;
+        case Message::ZoomIn:
+            getViewer()->navigationStyle()->zoomIn();
+            return true;
+        case Message::ZoomOut:
+            getViewer()->navigationStyle()->zoomOut();
+            return true;
+        case Message::ViewFit:
+            _viewer->viewAll();
+            return true;
+        case Message::ViewSelection:
+            _viewer->viewSelection();
+            return true;
+        case Message::ViewFront:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Front));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewRear:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Rear));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewLeft:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Left));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewRight:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Right));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewTop:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Top));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewBottom:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Bottom));
+            _viewer->viewAll();
+            return true;
+        case Message::ViewAxo:
+            _viewer->setCameraOrientation(Camera::rotation(Camera::Isometric));
+            _viewer->viewAll();
+            return true;
+        case Message::OrtographicCamera:
+            _viewer->setCameraType(SoOrthographicCamera::getClassTypeId());
+            return true;
+        case Message::PerspectiveCamera:
+            _viewer->setCameraType(SoPerspectiveCamera::getClassTypeId());
+            return true;
+        case Message::AlignToSelection:
+            _viewer->alignToSelection();
+            return true;
+        case Message::GetCamera:
+            Cam = _viewer->getSoRenderManager()->getCamera();
+            if (!Cam) {
+                return false;
+            }
+            *ppReturn = SoFCDB::writeNodesToString(Cam).c_str();
+            return true;
+        case Message::SetCamera:
+            return setCamera(pMsg + 10);
+        case Message::SetStereoRedGreen:
+            _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::ANAGLYPH);
+            return true;
+        case Message::SetStereoQuanBuff:
+            _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::QUAD_BUFFER);
+            return true;
+        case Message::SetStereoInterleavedRows:
+            _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::INTERLEAVED_ROWS);
+            return true;
+        case Message::SetStereoInterleavedColumns:
+            _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::INTERLEAVED_COLUMNS);
+            return true;
+        case Message::SetStereoOff:
+            _viewer->setStereoMode(Quarter::SoQTQuarterAdaptor::MONO);
+            return true;
+        case Message::ViewVR:
+            // call the VR portion of the viewer
+            _viewer->viewVR();
+            return true;
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::AllowsOverlayOnHover:
+        case Message::CanPan:
+        default:
+            return false;
+    }
 }
 
-bool View3DInventor::onHasMsg(const char* pMsg) const
+bool View3DInventor::onHasMsg(Message msg) const
 {
-    if (strcmp("CanPan", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("Save", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SaveAs", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SaveCopy", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("Undo", pMsg) == 0) {
-        App::Document* doc = getAppDocument();
-        return doc && doc->getAvailableUndos() > 0;
-    }
-    else if (strcmp("Redo", pMsg) == 0) {
-        App::Document* doc = getAppDocument();
-        return doc && doc->getAvailableRedos() > 0;
-    }
-    else if (strcmp("Print", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPreview", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("PrintPdf", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SetStereoRedGreen", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SetStereoQuadBuff", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SetStereoInterleavedRows", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SetStereoInterleavedColumns", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("SetStereoOff", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewFit", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewVR", pMsg) == 0) {
+    App::Document* doc = nullptr;
+    switch (msg) {
+        case Message::Save:
+        case Message::SaveAs:
+        case Message::SaveCopy:
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::Dump:
+        case Message::ZoomIn:
+        case Message::ZoomOut:
+        case Message::ViewFit:
+        case Message::ViewSelection:
+        case Message::ViewFront:
+        case Message::ViewRear:
+        case Message::ViewLeft:
+        case Message::ViewRight:
+        case Message::ViewTop:
+        case Message::ViewBottom:
+        case Message::ViewAxo:
+        case Message::AlignToSelection:
+        case Message::CanPan:
+        case Message::GetCamera:
+        case Message::SetCamera:
+        case Message::AllowsOverlayOnHover:
+        case Message::SetStereoRedGreen:
+        case Message::SetStereoQuanBuff:
+        case Message::SetStereoInterleavedRows:
+        case Message::SetStereoInterleavedColumns:
+        case Message::SetStereoOff:
+            return true;
+        case Message::Undo:
+            doc = getAppDocument();
+            return doc && doc->getAvailableUndos() > 0;
+        case Message::Redo:
+            doc = getAppDocument();
+            return doc && doc->getAvailableRedos() > 0;
+        case Message::ViewVR:
 #ifdef BUILD_VR
-        return true;
+            return true;
 #else
-        return false;
+            return false;
 #endif
+        default:
+            return false;
     }
-    else if (strcmp("ViewSelection", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewBottom", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewFront", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewLeft", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewRear", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewRight", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewTop", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("ViewAxo", pMsg) == 0) {
-        return true;
-    }
-    else if (strcmp("GetCamera", pMsg) == 0) {
-        return true;
-    }
-    else if (strncmp("SetCamera", pMsg, 9) == 0) {
-        return true;
-    }
-    else if (strncmp("Dump", pMsg, 4) == 0) {
-        return true;
-    }
-    else if (strcmp("AlignToSelection", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("ZoomIn", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("ZoomOut", pMsg) == 0) {
-        return true;
-    }
-    if (strcmp("AllowsOverlayOnHover", pMsg) == 0) {
-        return true;
-    }
-
-    return false;
 }
 
 bool View3DInventor::setCamera(const char* pCamera)

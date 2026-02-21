@@ -75,8 +75,8 @@ public:
         return "SheetView";
     }
 
-    bool onMsg(const char* pMsg, const char** ppReturn) override;
-    bool onHasMsg(const char* pMsg) const override;
+    bool onMsg(Gui::Message msg, const char** ppReturn) override;
+    bool onHasMsg(Gui::Message msg) const override;
 
     /** @name Printing */
     //@{

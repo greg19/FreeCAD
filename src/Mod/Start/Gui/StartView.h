@@ -72,7 +72,7 @@ public:
     void newDraftFile();
     void newArchFile();
 
-    bool onHasMsg(const char* pMsg) const override;
+    bool onHasMsg(Gui::Message msg) const override;
 
 public:
     enum class PostStartBehavior

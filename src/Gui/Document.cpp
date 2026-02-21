@@ -1901,7 +1901,7 @@ void Document::RestoreDocFile(Base::Reader& reader)
                 const char** pReturnIgnore = nullptr;
                 std::list<MDIView*> mdi = getMDIViews();
                 for (const auto& it : mdi) {
-                    if (it->onHasMsg("SetCamera")) {
+                    if (it->onHasMsg(Message::SetCamera)) {
                         it->onMsg(cameraSettings.c_str(), pReturnIgnore);
                     }
                 }
@@ -2025,9 +2025,9 @@ void Document::SaveDocFile(Base::Writer& writer) const
     // save camera settings
     std::list<MDIView*> mdi = getMDIViews();
     for (const auto& it : mdi) {
-        if (it->onHasMsg("GetCamera")) {
+        if (it->onHasMsg(Message::GetCamera)) {
             const char* ppReturn = nullptr;
-            it->onMsg("GetCamera", &ppReturn);
+            it->onMsg(Message::GetCamera, &ppReturn);
             if (saveCameraSettings(ppReturn)) {
                 break;
             }
@@ -2218,7 +2218,7 @@ MDIView* Document::createView(const Base::Type& typeId, CreateViewMode mode)
             shareWidget = qobject_cast<QOpenGLWidget*>(firstView->getViewer()->getGLWidget());
 
             const char* ppReturn = nullptr;
-            firstView->onMsg("GetCamera", &ppReturn);
+            firstView->onMsg(Message::GetCamera, &ppReturn);
             saveCameraSettings(ppReturn);
         }
 
@@ -2528,19 +2528,16 @@ std::list<MDIView*> Document::getMDIViewsOfType(const Base::Type& typeId) const
 }
 
 /// send messages to the active view
-bool Document::sendMsgToViews(const char* pMsg)
+bool Document::sendMsgToViews(Gui::Message msg)
 {
-    std::list<Gui::BaseView*>::iterator it;
-    const char** pReturnIgnore = nullptr;
-
-    for (it = d->baseViews.begin(); it != d->baseViews.end(); ++it) {
-        if ((*it)->onMsg(pMsg, pReturnIgnore)) {
+    for (auto& baseView : d->baseViews) {
+        if (baseView->onMsg(msg, nullptr)) {
             return true;
         }
     }
 
-    for (it = d->passiveViews.begin(); it != d->passiveViews.end(); ++it) {
-        if ((*it)->onMsg(pMsg, pReturnIgnore)) {
+    for (auto& passiveView : d->passiveViews) {
+        if (passiveView->onMsg(msg, nullptr)) {
             return true;
         }
     }
@@ -2548,20 +2545,19 @@ bool Document::sendMsgToViews(const char* pMsg)
     return false;
 }
 
-bool Document::sendMsgToFirstView(const Base::Type& typeId, const char* pMsg, const char** ppReturn)
+bool Document::sendMsgToFirstView(const Base::Type& typeId, Message msg, const char** ppReturn)
 {
     // first try the active view
     Gui::MDIView* view = getActiveView();
     if (view && view->isDerivedFrom(typeId)) {
-        if (view->onMsg(pMsg, ppReturn)) {
+        if (view->onMsg(msg, ppReturn)) {
             return true;
         }
     }
 
     // now try the other views
-    std::list<Gui::MDIView*> views = getMDIViewsOfType(typeId);
-    for (const auto& it : views) {
-        if ((it != view) && it->onMsg(pMsg, ppReturn)) {
+    for (const auto& it : getMDIViewsOfType(typeId)) {
+        if ((it != view) && it->onMsg(msg, ppReturn)) {
             return true;
         }
     }

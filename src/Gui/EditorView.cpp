@@ -233,108 +233,84 @@ void EditorView::checkTimestamp()
 /**
  * Runs the action specified by \a pMsg.
  */
-bool EditorView::onMsg(const char* pMsg, const char** /*ppReturn*/)
+bool EditorView::onMsg(Message msg, const char** /*ppReturn*/)
 {
     // don't allow any actions if the editor is being closed
     if (d->aboutToClose) {
         return false;
     }
 
-    if (strcmp(pMsg, "Save") == 0) {
-        saveFile();
-        return true;
+    switch (msg) {
+        case Message::Save:
+            saveFile();
+            return true;
+        case Message::SaveAs:
+            saveAs();
+            return true;
+        case Message::Cut:
+            cut();
+            return true;
+        case Message::Copy:
+            copy();
+            return true;
+        case Message::Paste:
+            paste();
+            return true;
+        case Message::Undo:
+            undo();
+            return true;
+        case Message::Redo:
+            redo();
+            return true;
+        case Message::ViewFit:
+            // just ignore this
+            return true;
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::Run:
+        case Message::DebugStart:
+        case Message::DebugStop:
+        default:
+            return false;
     }
-    else if (strcmp(pMsg, "SaveAs") == 0) {
-        saveAs();
-        return true;
-    }
-    else if (strcmp(pMsg, "Cut") == 0) {
-        cut();
-        return true;
-    }
-    else if (strcmp(pMsg, "Copy") == 0) {
-        copy();
-        return true;
-    }
-    else if (strcmp(pMsg, "Paste") == 0) {
-        paste();
-        return true;
-    }
-    else if (strcmp(pMsg, "Undo") == 0) {
-        undo();
-        return true;
-    }
-    else if (strcmp(pMsg, "Redo") == 0) {
-        redo();
-        return true;
-    }
-    else if (strcmp(pMsg, "ViewFit") == 0) {
-        // just ignore this
-        return true;
-    }
-
-    return false;
 }
 
 /**
  * Checks if the action \a pMsg is available. This is for enabling/disabling
  * the corresponding buttons or menu items for this action.
  */
-bool EditorView::onHasMsg(const char* pMsg) const
+bool EditorView::onHasMsg(Message msg) const
 {
     // don't allow any actions if the editor is being closed
     if (d->aboutToClose) {
         return false;
     }
-    if (strcmp(pMsg, "Run") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "DebugStart") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "DebugStop") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "SaveAs") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "Print") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "PrintPreview") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "PrintPdf") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "Save") == 0) {
-        return d->textEdit->document()->isModified();
-    }
-    else if (strcmp(pMsg, "Cut") == 0) {
-        bool canWrite = !d->textEdit->isReadOnly();
-        return (canWrite && (d->textEdit->textCursor().hasSelection()));
-    }
-    else if (strcmp(pMsg, "Copy") == 0) {
-        return (d->textEdit->textCursor().hasSelection());
-    }
-    else if (strcmp(pMsg, "Paste") == 0) {
-        QClipboard* cb = QApplication::clipboard();
-        QString text;
 
-        // Copy text from the clipboard (paste)
-        text = cb->text();
-
-        bool canWrite = !d->textEdit->isReadOnly();
-        return (!text.isEmpty() && canWrite);
+    switch (msg) {
+        case Message::SaveAs:
+        case Message::Print:
+        case Message::PrintPreview:
+        case Message::PrintPdf:
+        case Message::Run:
+        case Message::DebugStart:
+        case Message::DebugStop:
+            return true;
+        case Message::Save:
+            return d->textEdit->document()->isModified();
+        case Message::Cut:
+            return !d->textEdit->isReadOnly() && (d->textEdit->textCursor().hasSelection());
+        case Message::Copy:
+            return d->textEdit->textCursor().hasSelection();
+        case Message::Paste:
+            return !d->textEdit->isReadOnly() && !QApplication::clipboard()->text().isEmpty();
+        case Message::Undo:
+            return d->textEdit->document()->isUndoAvailable();
+        case Message::Redo:
+            return d->textEdit->document()->isRedoAvailable();
+        default:
+            return false;
     }
-    else if (strcmp(pMsg, "Undo") == 0) {
-        return d->textEdit->document()->isUndoAvailable();
-    }
-    else if (strcmp(pMsg, "Redo") == 0) {
-        return d->textEdit->document()->isRedoAvailable();
-    }
-
-    return false;
 }
 
 /** Checking on close state. */
@@ -663,39 +639,37 @@ PythonEditorView::~PythonEditorView()
 /**
  * Runs the action specified by \a pMsg.
  */
-bool PythonEditorView::onMsg(const char* pMsg, const char** ppReturn)
+bool PythonEditorView::onMsg(Message msg, const char** ppReturn)
 {
-    if (strcmp(pMsg, "Run") == 0) {
-        executeScript();
-        return true;
+    switch (msg) {
+        case Message::Run:
+            executeScript();
+            return true;
+        case Message::StartDebug:
+            QTimer::singleShot(300, this, &PythonEditorView::startDebug);
+            return true;
+        case Message::ToggleBreakpoint:
+            toggleBreakpoint();
+            return true;
+        default:
+            return EditorView::onMsg(msg, ppReturn);
     }
-    else if (strcmp(pMsg, "StartDebug") == 0) {
-        QTimer::singleShot(300, this, &PythonEditorView::startDebug);
-        return true;
-    }
-    else if (strcmp(pMsg, "ToggleBreakpoint") == 0) {
-        toggleBreakpoint();
-        return true;
-    }
-    return EditorView::onMsg(pMsg, ppReturn);
 }
 
 /**
  * Checks if the action \a pMsg is available. This is for enabling/disabling
  * the corresponding buttons or menu items for this action.
  */
-bool PythonEditorView::onHasMsg(const char* pMsg) const
+bool PythonEditorView::onHasMsg(Message msg) const
 {
-    if (strcmp(pMsg, "Run") == 0) {
-        return true;
+    switch (msg) {
+        case Message::Run:
+        case Message::StartDebug:
+        case Message::ToggleBreakpoint:
+            return true;
+        default:
+            return EditorView::onHasMsg(msg);
     }
-    if (strcmp(pMsg, "StartDebug") == 0) {
-        return true;
-    }
-    if (strcmp(pMsg, "ToggleBreakpoint") == 0) {
-        return true;
-    }
-    return EditorView::onHasMsg(pMsg);
 }
 
 /**
@@ -704,8 +678,8 @@ bool PythonEditorView::onHasMsg(const char* pMsg) const
 void PythonEditorView::executeScript()
 {
     // always save the macro when it is modified
-    if (EditorView::onHasMsg("Save")) {
-        EditorView::onMsg("Save", nullptr);
+    if (EditorView::onHasMsg(Message::Save)) {
+        EditorView::onMsg(Message::Print, nullptr);
     }
     try {
         getMainWindow()->setCursor(Qt::WaitCursor);
